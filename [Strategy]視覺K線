@@ -1,0 +1,15 @@
+//@version=4
+strategy(title="視覺K線", shorttitle="MA", overlay=true)
+L1 = close < sma(close,20)
+plotcandle(open,high,low,close,title="視覺K線",color=L1?color.green:color.red)
+
+//定義買入和賣出信號
+buySignal = close>sma(close,20)
+sellSignal = close<sma(close,20)
+
+// 策略買入和賣出
+strategy.entry("Buy", strategy.long, when=buySignal)
+strategy.close("Buy", when=sellSignal)
+
+strategy.entry("Sell", strategy.short, when=sellSignal)
+strategy.close("sell", when=buySignal)
