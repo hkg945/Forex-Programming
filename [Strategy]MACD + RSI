@@ -1,5 +1,5 @@
 //@version=4
-strategy(title="MACD Indicator", shorttitle="MACD", overlay=false)
+strategy(title="MACD+RSI Strategy", shorttitle="MACD+RSI", overlay=false)
 
 fastMA = ema(close,12)
 slowMA = ema(close,26)
@@ -24,3 +24,5 @@ strategy.close("sell", when=buySignal)
 plot(macd,color=color.blue,title="MACD Line")
 plot(signal,color=color.orange,title = "Signal Line")
 plot(histogram,color=color.red,style=plot.style_histogram,title="histogram")
+
+
