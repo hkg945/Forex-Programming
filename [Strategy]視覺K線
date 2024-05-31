@@ -1,5 +1,5 @@
 //@version=4
-strategy(title="視覺K線", shorttitle="MA", overlay=true)
+strategy(title="視覺K線", shorttitle="視覺K線", overlay=true)
 L1 = close < sma(close,20)
 plotcandle(open,high,low,close,title="視覺K線",color=L1?color.green:color.red)
 
