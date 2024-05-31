@@ -1,0 +1,26 @@
+//@version=4
+strategy(title="MACD Indicator", shorttitle="MACD", overlay=false)
+
+fastMA = ema(close,12)
+slowMA = ema(close,26)
+macd = fastMA - slowMA
+
+signal = sma(macd,9)
+histogram = macd - signal
+
+L1 = rsi(close,14)
+
+//定義買入和賣出信號
+buySignal = fastMA > slowMA and L1<50
+sellSignal = fastMA < slowMA and  L1>50
+
+// 策略買入和賣出
+strategy.entry("Buy", strategy.long, when=buySignal)
+strategy.close("Buy", when=sellSignal)
+
+strategy.entry("Sell", strategy.short, when=sellSignal)
+strategy.close("sell", when=buySignal)
+
+plot(macd,color=color.blue,title="MACD Line")
+plot(signal,color=color.orange,title = "Signal Line")
+plot(histogram,color=color.red,style=plot.style_histogram,title="histogram")
