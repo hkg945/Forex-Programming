@@ -1,0 +1,12 @@
+//@version=4
+study(title="變色MA均線", shorttitle="MA", overlay=true)
+
+L1 = sma(close,60)
+
+C01 = if L1[0]>L1[1]
+    color.red
+else
+    color.blue
+
+
+plot(L1, color=C01)
