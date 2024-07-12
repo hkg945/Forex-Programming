@@ -1,0 +1,10 @@
+//@Version=4
+Strategy("AutoTrading",shorttitle="AT",overlay=true)
+
+//交易條件設置
+Condition1= sma(close,10)>sma(close,60)
+Condition2= sma(close,10)<sma(close,60)
+
+//快訊條件設置
+alertcondition(Condition1, title='Buy Signal', message='LicenceID,Buy,SymbolName,risk=0.01')
+alertcondition(Condition2, title='Sell Signal', message='LicenceID,Sell,SymbolName,risk=0.01')
