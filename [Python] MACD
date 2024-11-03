@@ -1,0 +1,24 @@
+pip install yfinance pandas
+
+import yfinance as yf
+import pandas as pd
+
+# 從YahooFinance下載EURUSD做為範例，後續串接Forexify資料庫
+ticker = "EURUSD=X"
+data = yf.download(ticker, period="1y", interval="1d")
+
+# 計算MACD指標，預設參數12、26、9
+def calculate_macd(data, short_window=12, long_window=26, signal_window=9):
+    """
+    Calculate MACD indicator.
+    """
+    data['EMA12'] = data['Close'].ewm(span=short_window, adjust=False).mean()
+    data['EMA26'] = data['Close'].ewm(span=long_window, adjust=False).mean()
+    data['MACD'] = data['EMA12'] - data['EMA26']
+    data['Signal_Line'] = data['MACD'].ewm(span=signal_window, adjust=False).mean()
+    data['MACD_Histogram'] = data['MACD'] - data['Signal_Line']
+    return data[['Close', 'MACD', 'Signal_Line', 'MACD_Histogram']]
+
+# 計算MACD指標展示EURUSD的日線資料
+macd_data = calculate_macd(data)
+print(macd_data.tail())
