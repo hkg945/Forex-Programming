@@ -1,0 +1,22 @@
+pip install yfinance pandas numpy
+import yfinance as yf
+import pandas as pd
+
+# 定義計算 EMA 的函數
+def calculate_ema(data, period):
+    return data.ewm(span=period, adjust=False).mean()
+
+# 獲取EURUSD日線報價數據，後續替換成Forexify資料庫
+symbol = "EURUSD=X" 
+data = yf.download(symbol, interval="1d")
+
+# 檢查數據是否成功獲取
+if data.empty:
+    print("無法獲取數據，請檢查代碼是否正確。")
+else:
+    # 計算 20 日和 60 日的 EMA
+    data['EMA_20'] = calculate_ema(data['Close'], 20)
+    data['EMA_60'] = calculate_ema(data['Close'], 60)
+
+    # 顯示結果
+    print(data[['Close', 'EMA_20', 'EMA_60']].tail())
