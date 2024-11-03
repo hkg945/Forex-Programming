@@ -1,0 +1,28 @@
+!pip install yfinance pandas
+
+import yfinance as yf
+import pandas as pd
+
+# 下載 EUR/USD 日線報價數據，後續替換成Forexify資料庫
+data = yf.download('EURUSD=X', start='2024-01-01', end='2024-11-03', interval='1d')
+
+# 計算 K 和 D 值
+def calculate_kd(data, k_period=9, d_period=3):
+    # 計算最低價和最高價
+    low_min = data['Low'].rolling(window=k_period).min()
+    high_max = data['High'].rolling(window=k_period).max()
+    
+    # 計算 K 值
+    data['K'] = 100 * ((data['Close'] - low_min) / (high_max - low_min))
+    
+    # 計算 D 值
+    data['D'] = data['K'].rolling(window=d_period).mean()
+    
+    return data
+
+# 計算 KD 指標
+kd_data = calculate_kd(data)
+
+# 顯示結果
+print(kd_data[['Close', 'K', 'D']].tail(10))  # 顯示最後 10 筆數據
+
