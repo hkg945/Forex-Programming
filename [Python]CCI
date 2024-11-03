@@ -1,0 +1,25 @@
+pip install yfinance pandas
+
+import yfinance as yf
+import pandas as pd
+
+# 下載EURUSD日線數據，後續替換成Forexify資料庫
+data = yf.download("EURUSD=X", start="2024-01-01", end="2024-11-03", interval="1d")
+
+# 計算典型價格
+data['Typical Price'] = (data['High'] + data['Low'] + data['Close']) / 3
+
+# 設定CCI的參數
+n = 20  # 計算CCI的周期
+
+# 計算簡單移動平均
+data['SMA'] = data['Typical Price'].rolling(window=n).mean()
+
+# 計算平均絕對偏差
+data['MAD'] = data['Typical Price'].rolling(window=n).apply(lambda x: (abs(x - x.mean())).mean())
+
+# 計算CCI
+data['CCI'] = (data['Typical Price'] - data['SMA']) / (0.015 * data['MAD'])
+
+# 輸出結果
+print(data[['Close', 'CCI']].tail(30))  # 顯示最近30天的收盤價和CCI
