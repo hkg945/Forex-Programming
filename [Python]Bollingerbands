@@ -1,0 +1,21 @@
+pip install yfinance
+
+import yfinance as yf
+import pandas as pd
+
+# 下載EUR/USD的日線報價，後續替換成Forexify資料庫
+ticker = "EURUSD=X"  
+data = yf.download(ticker, start="2024-01-01", end="2024-11-03", interval="1d")
+
+# 計算布林通道
+window = 20  # 設置20天移動平均線的時間週期
+data['SMA'] = data['Close'].rolling(window=window).mean()  # 簡單移動平均線
+data['STD'] = data['Close'].rolling(window=window).std()   # 標準差
+
+# 計算布林通道上軌和下軌
+data['Upper Band'] = data['SMA'] + (data['STD'] * 2)
+data['Lower Band'] = data['SMA'] - (data['STD'] * 2)
+
+# 輸出布林通道指標
+bollinger_data = data[['Close', 'SMA', 'Upper Band', 'Lower Band']]
+print(bollinger_data.tail())
