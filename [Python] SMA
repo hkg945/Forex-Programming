@@ -1,0 +1,20 @@
+pip install yfinance
+
+import yfinance as yf
+import pandas as pd
+
+# 從Yahoo Finance下載EUR/USD日線數據，後續轉換為Forexify資料庫
+# Yahoo Finance中的EURUSD代碼為"EURUSD=X"
+eurusd_data = yf.download("EURUSD=X", start="2023-01-01", end="2023-12-31", interval="1d")
+
+# 確認數據是否下載成功
+print(eurusd_data.head())
+
+# 設置移動平均的週期，以20日均線為例，該數據就是時間週期
+window_size = 20
+
+# 計算簡單移動平均 (SMA)
+eurusd_data['SMA'] = eurusd_data['Close'].rolling(window=window_size).mean()
+
+# 顯示最後10天的結果
+print(eurusd_data[['Close', 'SMA']].tail(10))
