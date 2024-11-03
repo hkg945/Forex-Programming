@@ -1,0 +1,21 @@
+pip install yfinance pandas
+
+import yfinance as yf
+import pandas as pd
+
+# 下載EURUSD的日線數據，後續替換成Forexify資料庫
+data = yf.download('EURUSD=X', start='2024-01-01', end='2024-11-03', interval='1d')
+
+# 計算William指標
+def williams_r(df, period=14):
+    """計算William指標"""
+    high_max = df['High'].rolling(window=period).max()
+    low_min = df['Low'].rolling(window=period).min()
+    williams = -100 * (high_max - df['Close']) / (high_max - low_min)
+    return williams
+
+# 將William指標添加到數據框中
+data['Williams'] = williams_r(data)
+
+# 顯示結果
+print(data[['Close', 'Williams']].tail(10))
