@@ -1,0 +1,27 @@
+initialLotSize = input(0.1, title="Initial Lot Size")  // 初始手數要設置幾手？
+upduceFactor = input(1.618, title="Upduce Factor")     // 加倉因子，我每一梯次要加倉多少比例
+X = input (13, type=input.integer, minval=6, maxval=15, step=1)　// 幾個訊號分為一個組
+
+var int signalGroup = 0 //變數 = 跟電腦溝通：SignalGroup這個字它是一個會改變的數字，同時也是目前已經累積到第幾組訊號依據
+var float currentLotSize = initialLotSize　//變數 且 是一個小數點的數據，現在的交易實際手數要等同於InitialLotSize
+
+//如果多單訊號成立
+if (longCondition)
+    // 計算當前信號所在的組別代號
+    currentGroup = int(floor((strategy.opentrades - 1) / X)) //strategy.opentrades 目前我已經開倉幾筆，Floor就是強制無條件進位
+// int 代表強制轉換為整數 ，我就可以知道目前的訊號在第幾組。
+    
+    if (currentGroup > signalGroup) //如果目前組別數量>SignalGroup
+        // 進入新的加碼組別，手數必須跟著變動
+        signalGroup := currentGroup // SignalGroup就必須疊代置換成CurrentGroup
+        currentLotSize := initialLotSize * pow(upduceFactor, signalGroup) //所以我的正確下單手數 = 初始手數 * pow(加倉因子,訊號組別)
+// Pow的意思 就是 兩個數據相乘
+    
+    // 進場
+    strategy.order("Buy", strategy.long, qty=currentLotSize) //qty = 下單的量，必須跟著我們的currentLotSize變動
+
+// 出場邏輯
+if (exitCondition)
+    strategy.close("Buy", comment="Exit")
+    signalGroup := 0        // 重置組數，避免電腦重第n組開始下單，第一筆手數會過大。
+    currentLotSize := initialLotSize  // 重置手數
