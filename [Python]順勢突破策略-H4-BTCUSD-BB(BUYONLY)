@@ -1,0 +1,72 @@
+import pandas as pd
+import numpy as np
+import yfinance as yf
+
+def calculate_bollinger_bands(data, window=20, dev=2.1):
+    """
+    計算布林帶指標
+    """
+    data['basis'] = data['Close'].rolling(window).mean()
+    data['std_dev'] = data['Close'].rolling(window).std()
+    data['upper'] = data['basis'] + dev * data['std_dev']
+    data['lower'] = data['basis'] - dev * data['std_dev']
+    return data
+
+def apply_strategy(data):
+    """
+    應用交易策略
+    """
+    # 定義買入訊號和賣出訊號
+    data['buy_signal'] = (data['Close'] > data['basis']) & (data['Close'] > data['upper'])
+    data['buy_exit'] = data['Close'] < data['basis']
+    
+    # 模擬交易執行
+    data['position'] = 0  # 0 表示空倉，1 表示持有多單
+    for i in range(len(data)):
+        if data['buy_signal'].iloc[i]:
+            data['position'].iloc[i] = 1  # 開多單
+        elif data['buy_exit'].iloc[i]:
+            data['position'].iloc[i] = 0  # 平倉
+            
+        # 繼續保持上一筆倉位
+        if i > 0 and data['position'].iloc[i] == 0:
+            data['position'].iloc[i] = data['position'].iloc[i-1]
+    
+    return data
+
+def main():
+    # 下載 EURUSD 歷史數據，使用YahooFinance資料庫
+    ticker = "EURUSD=X"
+    data = yf.download(ticker, period="1y", interval="1d")
+
+    if data.empty:
+        print("下載數據失敗，請檢查網路或資料來源")
+        return
+
+    # 計算布林帶
+    data = calculate_bollinger_bands(data)
+    
+    # 應用交易策略
+    data = apply_strategy(data)
+    
+    # 輸出結果
+    print(data[['Close', 'basis', 'upper', 'lower', 'buy_signal', 'buy_exit', 'position']])
+
+    # 可視化（需要 matplotlib）
+    try:
+        import matplotlib.pyplot as plt
+        plt.figure(figsize=(12, 6))
+        plt.plot(data['Close'], label='Close Price', color='black')
+        plt.plot(data['basis'], label='Basis (SMA)', color='blue')
+        plt.plot(data['upper'], label='Upper Band', color='red')
+        plt.plot(data['lower'], label='Lower Band', color='orange')
+        plt.scatter(data.index, data['Close'][data['buy_signal']], color='green', label='Buy Signal', marker='^', alpha=1)
+        plt.scatter(data.index, data['Close'][data['buy_exit']], color='red', label='Sell Signal', marker='v', alpha=1)
+        plt.title('Bollinger Bands with Strategy Signals')
+        plt.legend()
+        plt.show()
+    except ImportError:
+        print("matplotlib 未安裝，無法生成圖表")
+
+if __name__ == "__main__":
+    main()
