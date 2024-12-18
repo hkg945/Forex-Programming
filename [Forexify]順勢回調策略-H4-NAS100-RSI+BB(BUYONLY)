@@ -1,5 +1,5 @@
 //@version=4
-strategy(title="[Forexify]順勢回調策略-H4-NAS100-RSI+BB(BUYONLY)",shorttitle="[Forexify]RSI+BB(BUYONLY)",overlay=true,pyramiding = 10)
+strategy(title="[Forexify]順勢回調策略-H4-NAS100-RSI+BB(BUYONLY)",shorttitle="[Forexify]NAS100-RSI+BB(BUYONLY)",overlay=true,pyramiding = 10)
 
 //RSI代碼
 rsi = rsi(close,20)
