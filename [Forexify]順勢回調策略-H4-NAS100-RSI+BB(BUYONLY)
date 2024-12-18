@@ -1,0 +1,18 @@
+//@version=4
+strategy(title="[Forexify]順勢回調策略-H4-NAS100-RSI+BB(BUYONLY)",shorttitle="[Forexify]RSI+BB(BUYONLY)",overlay=true,pyramiding = 10)
+
+//RSI代碼
+rsi = rsi(close,20)
+//BB代碼
+basis = sma(close,20) // 20期均線
+dev = 2 * stdev(close,20) // 2倍標準差
+upper = basis + dev  // 上軌道
+lower = basis - dev // 下軌道
+
+//交易訊號
+BuySignal = rsi < 50 and close < lower
+BuyExit = rsi>50 or close > upper
+
+//回測進場與出場
+strategy.entry("BUY",strategy.long,when=BuySignal)
+strategy.close("BUY",when=BuyExit)
