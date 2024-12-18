@@ -1,0 +1,80 @@
+import pandas as pd
+import numpy as np
+import yfinance as yf
+import matplotlib.pyplot as plt
+
+def calculate_rsi(data, period=20):
+    """
+    計算 RSI 指標
+    """
+    delta = data['Close'].diff()
+    gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
+    loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
+    rs = gain / loss
+    rsi = 100 - (100 / (1 + rs))
+    data['RSI'] = rsi
+    return data
+
+def calculate_bollinger_bands(data, window=20, dev=2):
+    """
+    計算布林帶
+    """
+    data['basis'] = data['Close'].rolling(window).mean()
+    data['std_dev'] = data['Close'].rolling(window).std()
+    data['upper'] = data['basis'] + dev * data['std_dev']
+    data['lower'] = data['basis'] - dev * data['std_dev']
+    return data
+
+def apply_strategy(data):
+    """
+    定義交易策略，模擬進場與出場條件
+    """
+    # 訊號條件
+    data['BuySignal'] = (data['RSI'] < 50) & (data['Close'] < data['lower'])
+    data['BuyExit'] = (data['RSI'] > 50) | (data['Close'] > data['upper'])
+    
+    # 建立倉位變化
+    data['position'] = 0  # 初始倉位
+    for i in range(len(data)):
+        if data['BuySignal'].iloc[i]:
+            data['position'].iloc[i] = 1  # 開多單
+        elif data['BuyExit'].iloc[i]:
+            data['position'].iloc[i] = 0  # 平倉
+        # 繼承上一筆倉位
+        if i > 0 and data['position'].iloc[i] == 0:
+            data['position'].iloc[i] = data['position'].iloc[i-1]
+    return data
+
+def main():
+    # 下載 NAS100 歷史數據
+    ticker = "^NDX"
+    data = yf.download(ticker, period="1y", interval="1d")
+
+    if data.empty:
+        print("下載數據失敗，請檢查網路或資料來源")
+        return
+
+    # 計算 RSI 和布林帶
+    data = calculate_rsi(data)
+    data = calculate_bollinger_bands(data)
+    
+    # 應用策略
+    data = apply_strategy(data)
+
+    # 輸出結果
+    print(data[['Close', 'RSI', 'basis', 'upper', 'lower', 'BuySignal', 'BuyExit', 'position']])
+
+    # 可視化結果
+    plt.figure(figsize=(14, 8))
+    plt.plot(data['Close'], label='Close Price', color='black')
+    plt.plot(data['basis'], label='Basis (SMA)', color='blue', linestyle='--')
+    plt.plot(data['upper'], label='Upper Band', color='red', linestyle='--')
+    plt.plot(data['lower'], label='Lower Band', color='orange', linestyle='--')
+    plt.scatter(data.index, data['Close'][data['BuySignal']], color='green', label='Buy Signal', marker='^', alpha=1)
+    plt.scatter(data.index, data['Close'][data['BuyExit']], color='red', label='Sell Signal', marker='v', alpha=1)
+    plt.title('RSI + Bollinger Bands Strategy')
+    plt.legend()
+    plt.show()
+
+if __name__ == "__main__":
+    main()
