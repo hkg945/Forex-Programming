@@ -11,8 +11,8 @@ histogram = macd - signal
 L1 = rsi(close,14)
 
 //定義買入和賣出信號
-buySignal = fastMA > slowMA and L1<50
-sellSignal = fastMA < slowMA and  L1>50
+buySignal = macd>signal and L1<50
+sellSignal = macd<signal and  L1>50
 
 // 策略買入和賣出
 strategy.entry("Buy", strategy.long, when=buySignal)
