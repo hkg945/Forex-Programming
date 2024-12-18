@@ -1,0 +1,19 @@
+//@version=4
+strategy(title="[Forexify]順勢突破策略-H4-BTCUSD-BB(BUYONLY)", shorttitle="[Forexify]BTCUSD-BB(BUYONLY)", overlay=true)
+
+basis = sma(close,20)
+dev = 2.1* stdev(close,20)
+upper = basis + dev
+lower = basis - dev
+
+//定義買入與賣出訊號
+buySignal = close > basis and close > upper 
+buyExit = close < basis
+
+// 策略買入和賣出
+strategy.entry("Buy", strategy.long, when=buySignal)
+strategy.close("Buy", when = buyExit)
+
+plot(basis,color=color.blue,title="Basis")
+plot(upper,color=color.red,title="Upper Band")
+plot(lower,color=color.orange,title="Lower Band")
