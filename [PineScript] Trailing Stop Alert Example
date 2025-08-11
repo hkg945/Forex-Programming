@@ -1,0 +1,42 @@
+//@version=4
+strategy("Trailing Stop Alert Example", overlay=true)
+
+// === 參數 ===
+trailATRmult   = input(2.0, "ATR 倍數")
+atrLength      = input(14, "ATR 週期")
+useATR         = input(true, "用 ATR 作為追蹤止損")
+trailPoints    = input(50, "固定追蹤止損點數 (若不用ATR)")
+
+// === 計算 ATR ===
+atrValue = atr(atrLength)
+
+// === 假設進場條件 (示範用) ===
+longCondition = crossover(close, sma(close, 20))
+if (longCondition)
+    strategy.entry("Long", strategy.long)
+
+// === 記錄最高價 (多單) ===
+var float highestSinceEntry = na
+if (strategy.position_size > 0)
+    highestSinceEntry := na(highestSinceEntry) ? high : max(highestSinceEntry, high)
+else
+    highestSinceEntry := na
+
+// === 計算追蹤止損價位 ===
+trailStop = na
+if (strategy.position_size > 0)
+    if useATR
+        trailStop := highestSinceEntry - atrValue * trailATRmult
+    else
+        trailStop := highestSinceEntry - trailPoints * syminfo.mintick
+
+// === 停損條件 ===
+exitCondition = strategy.position_size > 0 and close < trailStop
+if (exitCondition)
+    strategy.close("Long")
+
+// === 畫圖 ===
+plot(trailStop, title="Trailing Stop", color=color.red, style=plot.style_line)
+
+// === Alert 條件 ===
+alertcondition(exitCondition, title="Trailing Stop Triggered", message="多單追蹤止損觸發！")
